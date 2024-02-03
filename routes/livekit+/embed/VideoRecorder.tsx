@@ -12,6 +12,7 @@ import {formatTime, startCountdown, stopCountdown, toggleFlip} from "~/component
 import {Track} from 'livekit-client';
 import { X as CloseIcon } from 'lucide-react';
 import '@livekit/components-styles';
+import {config as appConfig} from "~/config.ts";
 
 const CloseButton: React.FC<{ closeVideo: () => void }> = ({ closeVideo }) => (
     <button onClick={closeVideo}>
@@ -70,7 +71,7 @@ const VideoRecorder: React.FC<{
     };
 
     const startRecording = async () => {
-        const response = await fetch('/livekit/api/startTrackCompositeEgress', {
+        const response = await fetch(`${appConfig.base.siteUrl}${process.env.LK_HOST}/startTrackCompositeEgress`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
