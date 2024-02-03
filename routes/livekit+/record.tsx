@@ -38,7 +38,7 @@ export let loader: LoaderFunction = async ({request}) => {
 
 
     // Fetch the token and LiveKit URL as before
-    const response = await fetch(`${process.env.LK_HOST}/livekit/api/getToken`);
+    const response = await fetch(`${process.env.LK_URL}/livekit/api/getToken`);
 
     if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -46,14 +46,14 @@ export let loader: LoaderFunction = async ({request}) => {
     const data = await response.json();
 
     // Fetch the audio and video track IDs from your server
-    const trackResponse = await fetch(`${process.env.LK_HOST}/livekit/api/getTrackIDs`);
+    const trackResponse = await fetch(`${process.env.LK_URL}/livekit/api/getTrackIDs`);
     if (!trackResponse.ok) {
         throw new Error(`HTTP error! status: ${trackResponse.status}`);
     }
     const trackData = await trackResponse.json();
 
     // Create a room by making a POST request to the createRoom route
-    const roomResponse = await fetch(`${process.env.LK_HOST}/livekit/api/createRoom`, {
+    const roomResponse = await fetch(`${process.env.LK_URL}/livekit/api/createRoom`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'

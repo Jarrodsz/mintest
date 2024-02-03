@@ -9,6 +9,7 @@ import {
 } from '@livekit/components-react';
 import {FlipHorizontal} from "lucide-react";
 import {formatTime, startCountdown, stopCountdown, toggleFlip} from "~/components/recorder/utils/functions.ts";
+import RecordButton from "~/components/recorder/RecordButton.tsx";
 import {Track} from 'livekit-client';
 import { X as CloseIcon } from 'lucide-react';
 import '@livekit/components-styles';
@@ -71,7 +72,7 @@ const VideoRecorder: React.FC<{
     };
 
     const startRecording = async () => {
-        const response = await fetch(`${appConfig.base.siteUrl}${process.env.LK_HOST}/startTrackCompositeEgress`, {
+        const response = await fetch(`${process.env.LK_URL}/livekit/api/startTrackCompositeEgress`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -90,7 +91,7 @@ const VideoRecorder: React.FC<{
     };
 
     return (
-        <div className={"h-screen w-screen"} data-lk-theme="default">
+        <div className={"h-screen w-screen bg-black"} data-lk-theme="default">
             <LiveKitRoom
                 token={token}
                 serverUrl={serverUrl}
@@ -104,8 +105,11 @@ const VideoRecorder: React.FC<{
                     <div className={"relative"}>
                         <div className="z-50 absolute bottom-4 left-0 right-0">
                             <div className="p-4 flex justify-between w-full items-center">
+                                <div>
+                                    <FlipHorizontal className={""}
+                                                    onClick={() => toggleFlip(isFlipped, setIsFlipped)}/>
+                                </div>
                                 <div className="flex justify-center items-center w-full">
-                                    {/*//just a regular button with some styling*/}
                                     <RecordButton
                                         startRecording={startRecording}
                                         stopRecording={() => stopCountdown(setIsConnected)}
