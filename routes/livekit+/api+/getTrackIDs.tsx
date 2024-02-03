@@ -7,7 +7,7 @@ export let loader: LoaderFunction = async ({request}) => {
 
     // Create a promise that resolves when the WebSocket connection is open
     const wsOpenPromise = new Promise((resolve, reject) => {
-        const ws = new WebSocket(`${process.env.LK_HOST}/rooms/${roomName}/participants/${participantIdentity}`);
+        const ws = new WebSocket(`${process.env.LK_HOST}/livekit/api/rooms/${roomName}/participants/${participantIdentity}`);
 
         ws.on('open', function open() {
             resolve(ws);
