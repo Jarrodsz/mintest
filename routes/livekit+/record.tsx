@@ -1,9 +1,4 @@
 import '@livekit/components-styles';
-import pkg, {Room} from 'livekit-server-sdk';
-import {config} from 'dotenv';
-
-config({path: '.env.development'});
-
 import {GridLayout, ParticipantTile, TrackRefContext, useConnectionState, useTracks,} from '@livekit/components-react';
 import {config as appConfig} from "~/config.ts";
 import React, {useEffect, useState} from 'react';
@@ -12,8 +7,7 @@ import {useLoaderData} from "@remix-run/react";
 import fetch from 'node-fetch';
 import {Track} from "livekit-client";
 import VideoRecorder from "~/routes/livekit+/embed/VideoRecorder.tsx";
-
-const {RoomServiceClient} = pkg;
+import { RoomServiceClient, Room } from 'livekit-server-sdk';
 
 
 /**
@@ -31,9 +25,20 @@ const {RoomServiceClient} = pkg;
  */
 
 /** LOADER FUNCTION */
+/** LOADER FUNCTION */
 export let loader: LoaderFunction = async ({request}) => {
+
+    const LK_HOST = process.env.LK_HOST;
+    const LK_API_KEY = process.env.LK_API_KEY;
+    const LK_API_SECRET = process.env.LK_API_SECRET;
+
+    if (!LK_HOST || !LK_API_KEY || !LK_API_SECRET) {
+        throw new Error('Environment variables LK_HOST, LK_API_KEY, or LK_API_SECRET are not defined');
+    }
+
+
     // Fetch the token and LiveKit URL as before
-    const response = await fetch(`${appConfig.base.siteUrl}/livekit/api/getToken`);
+    const response = await fetch(`${appConfig.base.siteUrl}/${process.env.LK_HOST}/getToken`);
 
     if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -41,39 +46,40 @@ export let loader: LoaderFunction = async ({request}) => {
     const data = await response.json();
 
     // Fetch the audio and video track IDs from your server
-    const trackResponse = await fetch(`${appConfig.base.siteUrl}/livekit/api/getTrackIDs`);
+    const trackResponse = await fetch(`${appConfig.base.siteUrl}/${process.env.LK_HOST}/getTrackIDs`);
     if (!trackResponse.ok) {
         throw new Error(`HTTP error! status: ${trackResponse.status}`);
     }
     const trackData = await trackResponse.json();
 
-    // Create a room
-    const roomService = new RoomServiceClient(
-        process.env.LK_HOST,
-        process.env.LK_API_KEY,
-        process.env.LK_API_SECRET);
-    const options = {
-        name: 'demo', // Replace with your room name
-    };
-    let room;
-    try {
-        room = await roomService.createRoom(options);
-    } catch (error) {
-        console.error('Failed to create room:', error);
-        return json({error: 'Failed to create room'}, {status: 500});
+    // Create a room by making a POST request to the createRoom route
+    const roomResponse = await fetch(`${appConfig.base.siteUrl}/${process.env.LK_HOST}/createRoom`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            name: 'demo', // Replace with your room name
+            emptyTimeout: 10 * 60, // 10 minutes
+            maxParticipants: 1,
+        })
+    });
+
+    if (!roomResponse.ok) {
+        throw new Error(`HTTP error! status: ${roomResponse.status}`);
     }
+    const roomData = await roomResponse.json();
 
     const newData = {
         ...data,
         LK_HOST: process.env.LK_HOST,
         audioTrackID: trackData.audioTrackID,
         videoTrackID: trackData.videoTrackID,
-        room: room.sid,
+        room: roomData.room,
     };
 
     return json(newData);
 }
-
 /** STAGE */
 function Stage() {
 
